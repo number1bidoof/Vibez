@@ -59,7 +59,7 @@ class Car:
         self.image = pygame.Surface((CAR_WIDTH, CAR_HEIGHT), pygame.SRCALPHA)
         self.image.fill(self.color)
         self.rect = self.image.get_rect(center=(self.x, self.y))
-        self.laps = LAPS_TO_WIN
+        self.laps = 0
         self.passed_finish = False
 
     def update(self, keys):
@@ -76,11 +76,6 @@ class Car:
             self.x -= self.speed * math.cos(radians)
             self.y += self.speed * math.sin(radians)
 
-        # Ensure the car stays within the track boundary
-        if not (100 < self.x < 700 and 100 < self.y < 500):
-            self.x = max(min(self.x, 700), 100)
-            self.y = max(min(self.y, 500), 100)
-
         self.rect.center = (self.x, self.y)
 
     def draw(self):
@@ -92,9 +87,20 @@ class Car:
             character_rect = self.character_surface.get_rect(center=self.rect.center)
             screen.blit(self.character_surface, character_rect)
 
-def draw_track():
-    pygame.draw.ellipse(screen, TRACK_COLOR, (100, 100, 600, 400), 0)
+def draw_rainbow_road():
+    # Draw the rainbow road
+    colors = [(255, 0, 0), (255, 127, 0), (255, 255, 0), (0, 255, 0), (0, 0, 255), (75, 0, 130), (148, 0, 211)]
+    block_width = 100
+    block_height = 10
+
+    # Create the rainbow pattern for the road
+    for i in range(7):
+        pygame.draw.rect(screen, colors[i], (100, 100 + (i * block_height), WIDTH - 200, block_height))
+    
+    # Inner track border
     pygame.draw.ellipse(screen, BLACK, (150, 150, 500, 300), 0)
+
+    # Finish line
     pygame.draw.rect(screen, (255, 255, 0), FINISH_LINE)
 
 class Button:
@@ -247,11 +253,11 @@ def game_loop(player_color, player_character_name, mode):
 
     clock = pygame.time.Clock()
     running = True
-    font = pygame.font.Font(None, 24)  # Smaller font size
+    font = pygame.font.Font(None, 48)
 
     while running:
         screen.fill(WHITE)
-        draw_track()
+        draw_rainbow_road()
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -271,17 +277,14 @@ def game_loop(player_color, player_character_name, mode):
         # Check if player car crosses finish line
         if FINISH_LINE.collidepoint(player_car.rect.center):
             if not player_car.passed_finish:
-                player_car.laps -= 1  # Reduce laps remaining when crossing the finish line
+                player_car.laps += 1
                 player_car.passed_finish = True
-                print(f"{player_car.character_name} completed a lap. {player_car.laps} laps remaining.")
+                print(f"{player_car.character_name} completed lap {player_car.laps}")
         else:
             player_car.passed_finish = False
 
-        # Display remaining laps at the top-left corner
-        draw_text(f"Laps Remaining: {player_car.laps}", font, (0, 0, 0), 10, 10)
-
         # Check if player has won
-        if player_car.laps <= 0:
+        if player_car.laps >= LAPS_TO_WIN:
             draw_text("You Win!", font, (0, 255, 0), WIDTH // 2 - 100, HEIGHT // 2)
             pygame.display.update()
             pygame.time.wait(3000)
