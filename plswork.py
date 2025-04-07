@@ -77,6 +77,10 @@ class Car:
             self.x -= self.speed * math.cos(radians)
             self.y += self.speed * math.sin(radians)
 
+        # Restrict player to the track boundaries
+        self.x = max(150, min(self.x, WIDTH - 150))
+        self.y = max(150, min(self.y, HEIGHT - 150))
+
         self.rect.center = (self.x, self.y)
 
     def draw(self):
@@ -154,15 +158,8 @@ def ai_move(car):
     car.y -= AI_SPEED * math.sin(radians)
     
     # Ensure AI stays within track boundaries
-    if car.x < 150:
-        car.x = 150  # Prevent AI from moving too far left
-    elif car.x > WIDTH - 150:
-        car.x = WIDTH - 150  # Prevent AI from moving too far right
-
-    if car.y < 150:
-        car.y = 150  # Prevent AI from moving too far up
-    elif car.y > HEIGHT - 150:
-        car.y = HEIGHT - 150  # Prevent AI from moving too far down
+    car.x = max(150, min(car.x, WIDTH - 150))
+    car.y = max(150, min(car.y, HEIGHT - 150))
     
     car.rect.center = (car.x, car.y)
 
@@ -295,6 +292,10 @@ def game_loop(player_color, player_character_name, mode):
                 print(f"{player_car.character_name} completed lap {player_car.laps}")
         else:
             player_car.passed_finish = False
+
+        # Draw laps remaining
+        laps_remaining = LAPS_TO_WIN - player_car.laps
+        draw_text(f"Laps Remaining: {laps_remaining}", font, (0, 0, 0), 10, 10)
 
         # Check if player has won
         if player_car.laps >= LAPS_TO_WIN:
