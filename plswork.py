@@ -51,8 +51,12 @@ class Car:
     def __init__(self, x, y, color, character_name):
         self.x = x
         self.y = y
-        self.speed = 5
+        self.speed = 0
         self.angle = 0
+        self.acceleration = 0.1  # Acceleration when pressing the forward key
+        self.max_speed = 5  # Maximum speed
+        self.turning_speed = 3  # Turning speed (how fast the car rotates)
+        self.friction = 0.99  # Simulate friction to slow down the car
         self.color = color
         self.character_name = character_name
         self.character_surface = CHARACTER_IMAGES.get(character_name)
@@ -63,18 +67,27 @@ class Car:
         self.passed_finish = False
 
     def update(self, keys):
-        if keys.get(pygame.K_a, False):
-            self.angle -= 5
-        if keys.get(pygame.K_d, False):
-            self.angle += 5
-        if keys.get(pygame.K_w, False):
-            radians = math.radians(self.angle)
-            self.x += self.speed * math.cos(radians)
-            self.y -= self.speed * math.sin(radians)
-        if keys.get(pygame.K_s, False):
-            radians = math.radians(self.angle)
-            self.x -= self.speed * math.cos(radians)
-            self.y += self.speed * math.sin(radians)
+        # Handle turning
+        if keys.get(pygame.K_a, False):  # Left
+            self.angle -= self.turning_speed
+        if keys.get(pygame.K_d, False):  # Right
+            self.angle += self.turning_speed
+
+        # Accelerate or decelerate
+        if keys.get(pygame.K_w, False):  # Forward
+            if self.speed < self.max_speed:
+                self.speed += self.acceleration
+        elif keys.get(pygame.K_s, False):  # Reverse
+            if self.speed > -self.max_speed:
+                self.speed -= self.acceleration
+        else:
+            # Apply friction when no key is pressed
+            self.speed *= self.friction
+
+        # Use the angle and speed to calculate movement
+        radians = math.radians(self.angle)
+        self.x += self.speed * math.cos(radians)
+        self.y -= self.speed * math.sin(radians)
 
         self.rect.center = (self.x, self.y)
 
@@ -108,53 +121,6 @@ class Button:
 
     def is_clicked(self, mouse_pos):
         return self.rect.collidepoint(mouse_pos)
-
-def customization_screen():
-    running = True
-    selected_color = (255, 0, 0)
-    selected_character_name = "Mario"
-    font = pygame.font.Font(None, 36)
-
-    color_buttons = [
-        Button("Red", 300, 150, 200, 50, (255, 0, 0), WHITE),
-        Button("Green", 300, 220, 200, 50, (0, 255, 0), WHITE),
-        Button("Blue", 300, 290, 200, 50, (0, 0, 255), WHITE),
-    ]
-
-    character_buttons = [
-        Button("Mario", 100, 150, 150, 50, (255, 0, 0), WHITE),
-        Button("Luigi", 100, 220, 150, 50, (0, 255, 0), WHITE),
-        Button("Peach", 100, 290, 150, 50, (255, 182, 193), WHITE),
-    ]
-
-    start_button = Button("Start Race", 300, 400, 200, 50, BLACK, WHITE)
-
-    while running:
-        screen.fill(WHITE)
-        draw_text("Customize Your Car", font, (255, 0, 0), 230, 50)
-
-        for button in color_buttons + character_buttons + [start_button]:
-            button.draw()
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                mouse_pos = pygame.mouse.get_pos()
-                for button in color_buttons:
-                    if button.is_clicked(mouse_pos):
-                        if button.text == "Red": selected_color = (255, 0, 0)
-                        elif button.text == "Green": selected_color = (0, 255, 0)
-                        elif button.text == "Blue": selected_color = (0, 0, 255)
-                for button in character_buttons:
-                    if button.is_clicked(mouse_pos):
-                        selected_character_name = button.text
-                if start_button.is_clicked(mouse_pos):
-                    return selected_color, selected_character_name
-
-        pygame.display.update()
-    pygame.quit()
-    return None, None
 
 def game_mode_selection():
     font = pygame.font.Font(None, 36)
