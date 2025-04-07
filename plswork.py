@@ -14,6 +14,7 @@ BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 FINISH_LINE = pygame.Rect(WIDTH // 2 - 5, 100, 10, 100)
 LAPS_TO_WIN = 3
+AI_SPEED = 3  # Speed of AI
 
 # Set up the display
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -149,8 +150,20 @@ def game_mode_selection():
 def ai_move(car):
     car.angle -= 1
     radians = math.radians(car.angle)
-    car.x += car.speed * math.cos(radians)
-    car.y -= car.speed * math.sin(radians)
+    car.x += AI_SPEED * math.cos(radians)
+    car.y -= AI_SPEED * math.sin(radians)
+    
+    # Ensure AI stays within track boundaries
+    if car.x < 150:
+        car.x = 150  # Prevent AI from moving too far left
+    elif car.x > WIDTH - 150:
+        car.x = WIDTH - 150  # Prevent AI from moving too far right
+
+    if car.y < 150:
+        car.y = 150  # Prevent AI from moving too far up
+    elif car.y > HEIGHT - 150:
+        car.y = HEIGHT - 150  # Prevent AI from moving too far down
+    
     car.rect.center = (car.x, car.y)
 
 def draw_text(text, font, color, x, y):
