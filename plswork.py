@@ -59,7 +59,7 @@ class Car:
         self.image = pygame.Surface((CAR_WIDTH, CAR_HEIGHT), pygame.SRCALPHA)
         self.image.fill(self.color)
         self.rect = self.image.get_rect(center=(self.x, self.y))
-        self.laps = 0
+        self.laps = LAPS_TO_WIN
         self.passed_finish = False
 
     def update(self, keys):
@@ -73,7 +73,7 @@ class Car:
             new_x = self.x + self.speed * math.cos(radians)
             new_y = self.y - self.speed * math.sin(radians)
             # Restrict movement within track boundaries
-            if 150 < new_x < 650 and 150 < new_y < 450:
+            if self.is_within_track(new_x, new_y):
                 self.x = new_x
                 self.y = new_y
         if keys.get(pygame.K_s, False):
@@ -82,11 +82,20 @@ class Car:
             new_x = self.x - self.speed * math.cos(radians)
             new_y = self.y + self.speed * math.sin(radians)
             # Restrict movement within track boundaries
-            if 150 < new_x < 650 and 150 < new_y < 450:
+            if self.is_within_track(new_x, new_y):
                 self.x = new_x
                 self.y = new_y
 
         self.rect.center = (self.x, self.y)
+
+    def is_within_track(self, new_x, new_y):
+        # Check if the new position is within the grey boundary (ellipse)
+        dx = new_x - WIDTH // 2
+        dy = new_y - HEIGHT // 2
+        # Ellipse equation for boundary (x^2/a^2 + y^2/b^2 = 1)
+        if (dx ** 2) / (300 ** 2) + (dy ** 2) / (200 ** 2) <= 1:
+            return True
+        return False
 
     def draw(self):
         rotated_image = pygame.transform.rotate(self.image, self.angle)
@@ -157,20 +166,17 @@ def draw_text(text, font, color, x, y):
     screen.blit(text_surface, (x, y))
 
 def main():
-    # Character and color selection inside main()
     running = True
     selected_color = (255, 0, 0)  # Default color: Red
     selected_character_name = "Mario"  # Default character: Mario
     font = pygame.font.Font(None, 36)
 
-    # Color selection buttons
     color_buttons = [
         Button("Red", 300, 150, 200, 50, (255, 0, 0), (255, 255, 255)),
         Button("Green", 300, 220, 200, 50, (0, 255, 0), (255, 255, 255)),
         Button("Blue", 300, 290, 200, 50, (0, 0, 255), (255, 255, 255)),
     ]
 
-    # Character selection buttons
     character_buttons = [
         Button("Mario", 100, 150, 150, 50, (255, 0, 0), (255, 255, 255)),
         Button("Luigi", 100, 220, 150, 50, (0, 255, 0), (255, 255, 255)),
@@ -179,11 +185,10 @@ def main():
         Button("Toad", 100, 430, 150, 50, (255, 255, 255), (0, 0, 0)),
     ]
 
-    # Start button
     start_button = Button("Start Race", 300, 500, 200, 50, (0, 0, 0), (255, 255, 255))
 
     while running:
-        screen.fill((255, 255, 255))  # White background
+        screen.fill((255, 255, 255))
 
         draw_text("Customize Your Car", font, (0, 0, 0), 230, 50)
 
@@ -197,7 +202,6 @@ def main():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_pos = pygame.mouse.get_pos()
 
-                # Handle color selection
                 for button in color_buttons:
                     if button.is_clicked(mouse_pos):
                         if button.text == "Red":
@@ -207,12 +211,10 @@ def main():
                         elif button.text == "Blue":
                             selected_color = (0, 0, 255)
 
-                # Handle character selection
                 for button in character_buttons:
                     if button.is_clicked(mouse_pos):
                         selected_character_name = button.text
 
-                # Start race
                 if start_button.is_clicked(mouse_pos):
                     mode = game_mode_selection()
                     game_loop(selected_color, selected_character_name, mode)
@@ -276,14 +278,17 @@ def game_loop(player_color, player_character_name, mode):
         # Check if player car crosses finish line
         if FINISH_LINE.collidepoint(player_car.rect.center):
             if not player_car.passed_finish:
-                player_car.laps += 1
+                player_car.laps -= 1  # Reduce laps remaining when crossing the finish line
                 player_car.passed_finish = True
-                print(f"{player_car.character_name} completed lap {player_car.laps}")
+                print(f"{player_car.character_name} completed a lap. {player_car.laps} laps remaining.")
         else:
             player_car.passed_finish = False
 
+        # Display remaining laps
+        draw_text(f"Laps Remaining: {player_car.laps}", font, (0, 0, 0), 600, 50)
+
         # Check if player has won
-        if player_car.laps >= LAPS_TO_WIN:
+        if player_car.laps <= 0:
             draw_text("You Win!", font, (0, 255, 0), WIDTH // 2 - 100, HEIGHT // 2)
             pygame.display.update()
             pygame.time.wait(3000)
