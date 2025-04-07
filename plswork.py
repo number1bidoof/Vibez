@@ -51,12 +51,8 @@ class Car:
     def __init__(self, x, y, color, character_name):
         self.x = x
         self.y = y
-        self.speed = 0
+        self.speed = 5
         self.angle = 0
-        self.acceleration = 0.1  # Acceleration when pressing the forward key
-        self.max_speed = 5  # Maximum speed
-        self.turning_speed = 3  # Turning speed (how fast the car rotates)
-        self.friction = 0.99  # Simulate friction to slow down the car
         self.color = color
         self.character_name = character_name
         self.character_surface = CHARACTER_IMAGES.get(character_name)
@@ -67,27 +63,18 @@ class Car:
         self.passed_finish = False
 
     def update(self, keys):
-        # Handle turning
-        if keys.get(pygame.K_a, False):  # Left
-            self.angle -= self.turning_speed
-        if keys.get(pygame.K_d, False):  # Right
-            self.angle += self.turning_speed
-
-        # Accelerate or decelerate
-        if keys.get(pygame.K_w, False):  # Forward
-            if self.speed < self.max_speed:
-                self.speed += self.acceleration
-        elif keys.get(pygame.K_s, False):  # Reverse
-            if self.speed > -self.max_speed:
-                self.speed -= self.acceleration
-        else:
-            # Apply friction when no key is pressed
-            self.speed *= self.friction
-
-        # Use the angle and speed to calculate movement
-        radians = math.radians(self.angle)
-        self.x += self.speed * math.cos(radians)
-        self.y -= self.speed * math.sin(radians)
+        if keys.get(pygame.K_a, False):
+            self.angle -= 5
+        if keys.get(pygame.K_d, False):
+            self.angle += 5
+        if keys.get(pygame.K_w, False):
+            radians = math.radians(self.angle)
+            self.x += self.speed * math.cos(radians)
+            self.y -= self.speed * math.sin(radians)
+        if keys.get(pygame.K_s, False):
+            radians = math.radians(self.angle)
+            self.x -= self.speed * math.cos(radians)
+            self.y += self.speed * math.sin(radians)
 
         self.rect.center = (self.x, self.y)
 
@@ -158,6 +145,71 @@ def ai_move(car):
 def draw_text(text, font, color, x, y):
     text_surface = font.render(text, True, color)
     screen.blit(text_surface, (x, y))
+
+def main():
+    # Character and color selection inside main()
+    running = True
+    selected_color = (255, 0, 0)  # Default color: Red
+    selected_character_name = "Mario"  # Default character: Mario
+    font = pygame.font.Font(None, 36)
+
+    # Color selection buttons
+    color_buttons = [
+        Button("Red", 300, 150, 200, 50, (255, 0, 0), (255, 255, 255)),
+        Button("Green", 300, 220, 200, 50, (0, 255, 0), (255, 255, 255)),
+        Button("Blue", 300, 290, 200, 50, (0, 0, 255), (255, 255, 255)),
+    ]
+
+    # Character selection buttons
+    character_buttons = [
+        Button("Mario", 100, 150, 150, 50, (255, 0, 0), (255, 255, 255)),
+        Button("Luigi", 100, 220, 150, 50, (0, 255, 0), (255, 255, 255)),
+        Button("Peach", 100, 290, 150, 50, (255, 182, 193), (255, 255, 255)),
+        Button("Bowser", 100, 360, 150, 50, (255, 165, 0), (255, 255, 255)),
+        Button("Toad", 100, 430, 150, 50, (255, 255, 255), (0, 0, 0)),
+    ]
+
+    # Start button
+    start_button = Button("Start Race", 300, 500, 200, 50, (0, 0, 0), (255, 255, 255))
+
+    while running:
+        screen.fill((255, 255, 255))  # White background
+
+        draw_text("Customize Your Car", font, (0, 0, 0), 230, 50)
+
+        for button in color_buttons + character_buttons + [start_button]:
+            button.draw()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_pos = pygame.mouse.get_pos()
+
+                # Handle color selection
+                for button in color_buttons:
+                    if button.is_clicked(mouse_pos):
+                        if button.text == "Red":
+                            selected_color = (255, 0, 0)
+                        elif button.text == "Green":
+                            selected_color = (0, 255, 0)
+                        elif button.text == "Blue":
+                            selected_color = (0, 0, 255)
+
+                # Handle character selection
+                for button in character_buttons:
+                    if button.is_clicked(mouse_pos):
+                        selected_character_name = button.text
+
+                # Start race
+                if start_button.is_clicked(mouse_pos):
+                    mode = game_mode_selection()
+                    game_loop(selected_color, selected_character_name, mode)
+
+        pygame.display.update()
+
+    pygame.quit()
 
 def game_loop(player_color, player_character_name, mode):
     if player_color is None or player_character_name is None:
@@ -232,12 +284,6 @@ def game_loop(player_color, player_character_name, mode):
         clock.tick(FPS)
 
     pygame.quit()
-
-def main():
-    player_color, player_character_name = customization_screen()
-    if player_color and player_character_name:
-        mode = game_mode_selection()
-        game_loop(player_color, player_character_name, mode)
 
 if __name__ == "__main__":
     main()
