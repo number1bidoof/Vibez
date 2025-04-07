@@ -263,6 +263,7 @@ def game_loop(player_color, player_character_name, mode):
             for ai_car in all_cars[1:]:
                 ai_move(ai_car)
 
+        # Check if player car crosses finish line
         if FINISH_LINE.collidepoint(player_car.rect.center):
             if not player_car.passed_finish:
                 player_car.laps += 1
@@ -271,6 +272,7 @@ def game_loop(player_color, player_character_name, mode):
         else:
             player_car.passed_finish = False
 
+        # Check if player has won
         if player_car.laps >= LAPS_TO_WIN:
             draw_text("You Win!", font, (0, 255, 0), WIDTH // 2 - 100, HEIGHT // 2)
             pygame.display.update()
