@@ -69,12 +69,22 @@ class Car:
             self.angle += 5
         if keys.get(pygame.K_w, False):
             radians = math.radians(self.angle)
-            self.x += self.speed * math.cos(radians)
-            self.y -= self.speed * math.sin(radians)
+            # Calculate new position
+            new_x = self.x + self.speed * math.cos(radians)
+            new_y = self.y - self.speed * math.sin(radians)
+            # Restrict movement within track boundaries
+            if 150 < new_x < 650 and 150 < new_y < 450:
+                self.x = new_x
+                self.y = new_y
         if keys.get(pygame.K_s, False):
             radians = math.radians(self.angle)
-            self.x -= self.speed * math.cos(radians)
-            self.y += self.speed * math.sin(radians)
+            # Calculate new position
+            new_x = self.x - self.speed * math.cos(radians)
+            new_y = self.y + self.speed * math.sin(radians)
+            # Restrict movement within track boundaries
+            if 150 < new_x < 650 and 150 < new_y < 450:
+                self.x = new_x
+                self.y = new_y
 
         self.rect.center = (self.x, self.y)
 
@@ -91,15 +101,6 @@ def draw_track():
     pygame.draw.ellipse(screen, TRACK_COLOR, (100, 100, 600, 400), 0)
     pygame.draw.ellipse(screen, BLACK, (150, 150, 500, 300), 0)
     pygame.draw.rect(screen, (255, 255, 0), FINISH_LINE)
-
-def constrain_car_position(car):
-    # Define the track boundary using the ellipse's position and size
-    track_rect = pygame.Rect(100, 100, 600, 400)
-    # Restrict the car to the track area
-    if not track_rect.collidepoint(car.rect.centerx, car.rect.centery):
-        # If the car is outside the track, stop movement
-        car.x = max(min(car.x, track_rect.right - CAR_WIDTH), track_rect.left + CAR_WIDTH)
-        car.y = max(min(car.y, track_rect.bottom - CAR_HEIGHT), track_rect.top + CAR_HEIGHT)
 
 class Button:
     def __init__(self, text, x, y, width, height, color, text_color):
@@ -271,17 +272,6 @@ def game_loop(player_color, player_character_name, mode):
         elif mode == "Race Against AI":
             for ai_car in all_cars[1:]:
                 ai_move(ai_car)
-
-        # Constrain cars within the track
-        constrain_car_position(player_car)
-
-        if mode == "Multiplayer":
-            player2 = all_cars[1]
-            constrain_car_position(player2)
-
-        elif mode == "Race Against AI":
-            for ai_car in all_cars[1:]:
-                constrain_car_position(ai_car)
 
         # Check if player car crosses finish line
         if FINISH_LINE.collidepoint(player_car.rect.center):
