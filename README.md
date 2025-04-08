@@ -1,10 +1,10 @@
 ## What did you build?
 
-it was supposted to be a mario cart style game in assembly, but i didnt want to break down my computer so i made it in pygame instead. It also kinda doesnt works well but we can call it **Mario Kart: From Temu**
+it was supposted to be a mario cart style game in assembly, but i didnt want to break down my computer so i made it in pygame instead. It also kinda doesnt works well but we can call it **Mario Kart: temu edition**
 
 ## What language(s) or tools did you use?
 
-Originally i wanted to use Asembly, but to install, process and load in files was really complicated, and I didnt want to have to debug in assembly *done it before, not doing it again*. Then I tried C, but i had a problem with pointers and **allocating memory space**, so I used **Python**, a language we all know and **Pygame** to visually simulate it
+Originally i wanted to use Asembly, but to install, process and load in files was really complicated, and I didnt want to have to debug in assembly *done it before, not doing it again*. Then I tried C, but i had a problem with pointers and **allocating memory space**, so I used **Python**, a language we all know and **Pygame** to visually simulate it. I used Python specifically becuase I know it pretty well and can debug it easily
 
 ## Which AI tools did you use, and how?
 
